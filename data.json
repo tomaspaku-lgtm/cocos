@@ -1,0 +1,27 @@
+{
+  "updated_at": "2026-10-22T19:05:00Z",
+  "snapshots": [
+    {
+      "date": "2026-10-22",
+      "total_ars": 1088205.56,
+      "total_usd": 700.0,
+      "cash_ars": 0,
+      "cash_usd": 700.0,
+      "cash_usd_cable": 0,
+      "invested_usd": 0
+    }
+  ],
+  "movements": [
+    {
+      "id": "2026-10-22-01",
+      "date": "2026-10-22",
+      "type": "Ingreso",
+      "description": "Recibiste US$ 700",
+      "currency": "USD",
+      "amount": 700.0,
+      "amount_usd": 700.0,
+      "flow_usd": 700.0
+    }
+  ],
+  "positions": []
+}

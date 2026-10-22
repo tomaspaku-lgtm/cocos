@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi cuenta Cocos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<script src="d3.min.js"></script>
+<style>
+  :root {
+    --font-anthropic-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-anthropic-serif: "Source Serif 4", Georgia, serif;
+    --color-bg: #f6f5f1; --color-fg: #1f1e1c; --color-fg-muted: #6b6862; --color-panel: #ffffff;
+    --color-border-line: #e4e1d9; --color-ok: #1a8a4a; --color-warn: #b7791f; --color-bad: #d13b3b;
+    --cds-font-size-caption: 12px; --cds-font-size-body: 14px; --cds-font-size-heading: 16px; --cds-font-size-title: 28px;
+    --cds-font-weight-medium: 600;
+    --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 16px; --cds-gap-lg: 24px; --cds-gap-xl: 32px;
+    --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 18px; --cds-pad-xl: 24px;
+    --cds-radius: 12px;
+    --cds-surface-popover: #ffffff; --cds-border: #e4e1d9; --cds-shadow-popover: 0 6px 20px rgba(0,0,0,.12);
+    --cds-text-secondary: #6b6862;
+    --cds-chart-grid: #ece9e2; --cds-chart-axis: #b9b5ab; --cds-chart-muted: #b9b5ab;
+    --cds-dur-slow: 400ms; --cds-ease-out: cubic-bezier(.2,.8,.2,1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg: #151514; --color-fg: #ecebe7; --color-fg-muted: #9c9890; --color-panel: #1f1f1d;
+      --color-border-line: #33322f; --color-ok: #3ccf7a; --color-bad: #ff6b6b;
+      --cds-surface-popover: #262624; --cds-border: #3a3936; --cds-shadow-popover: 0 6px 20px rgba(0,0,0,.5);
+      --cds-text-secondary: #9c9890; --cds-chart-grid: #2c2b29; --cds-chart-axis: #57554f; --cds-chart-muted: #6d6a63;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); }
+  #dash-root { max-width: 1200px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 48px; }
+  .dash-skeleton { color: transparent !important; background: var(--color-border-line); border-radius: 6px; animation: sk 1.2s ease-in-out infinite alternate; }
+  @keyframes sk { from { opacity: .5 } to { opacity: 1 } }
+  .site-foot { margin-top: 24px; color: var(--color-fg-muted); font-size: 12px; text-align: center; }
+</style>
+<script>
+(function () {
+  const colors = ['#2f6fed', '#e8833a', '#8a63d2', '#14a3a3', '#d6488f', '#c9a227', '#4c9a2a', '#6b7a8f'];
+  const store = {}, calcs = [], cbs = [];
+  let raw = null, status = 'loading';
+  function compute() {
+    if (!raw) return;
+    store.snapshots = { status: 'ok', data: raw.snapshots || [] };
+    store.movements = { status: 'ok', data: raw.movements || [] };
+    store.positions = { status: 'ok', data: raw.positions || [] };
+    calcs.forEach((c) => {
+      try { store[c.id] = { status: 'ok', data: c.fn(...c.inputs.map((i) => (store[i] ? store[i].data : []))) }; }
+      catch (e) { console.error(e); store[c.id] = { status: 'error', data: [] }; }
+    });
+  }
+  function run() { cbs.forEach((f) => { try { f(); } catch (e) { console.error(e); } }); }
+  window.dash = {
+    colors,
+    calc(id, spec) { calcs.push({ id, inputs: spec.inputs, fn: spec.fn }); },
+    data(id) { const d = store[id]; return d ? { ...d, columns: [], meta: [], refreshing: false } : { status, data: [], columns: [], meta: [] }; },
+    onData(fn) { cbs.push(fn); try { fn(); } catch (e) { console.error(e); } },
+  };
+  fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => r.json()).then((j) => {
+    raw = j; compute(); run();
+    const f = document.getElementById('site-updated');
+    if (f && j.updated_at) f.textContent = 'Última actualización: ' + new Date(j.updated_at).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', dateStyle: 'short', timeStyle: 'short' });
+  }).catch(() => { status = 'error'; run(); });
+  let t; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(run, 150); });
+})();
+</script>
+</head>
+<body>
+<div id="dash-root">
+<style>
+  .cc { position: relative; font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .cc-head { margin-bottom: var(--cds-gap-lg); }
+  .cc-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0 0 var(--cds-gap-xs); }
+  .cc-take { margin: 0; font-size: var(--cds-font-size-body); }
+  .cc-asof { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .cc-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: var(--cds-gap-md); margin-bottom: var(--cds-gap-md); }
+  .cc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); margin-bottom: var(--cds-gap-md); }
+  .cc-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+  .cc-kpi { border-top-width: 4px; }
+  .cc-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+  .cc-note { margin: var(--cds-gap-xs) 0 var(--cds-gap-md); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .cc-label { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: 0 0 var(--cds-gap-xs); }
+  .cc-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; margin: 0; min-height: 1.2em; white-space: nowrap; }
+  .cc-sub { margin: var(--cds-gap-xs) 0 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; min-height: 1.2em; }
+  .cc-pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; background: color-mix(in srgb, currentColor 14%, transparent); }
+  .cc-good { color: var(--color-ok); }
+  .cc-badv { color: var(--color-bad); }
+  .cc-chart { position: relative; min-height: 220px; }
+  .cc-chart svg { display: block; overflow: visible; }
+  .cc-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; display: none; z-index: 2; }
+  .cc-tip .d { color: var(--cds-text-secondary); }
+  .cc-sw { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .cc-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-bottom: var(--cds-gap-sm); }
+  .cc-legend b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+  .cc-donut { display: flex; flex-wrap: wrap; align-items: center; gap: var(--cds-gap-lg); min-height: 200px; }
+  .cc-donut-legend { display: grid; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-body); flex: 1 1 10rem; }
+  .cc-donut-legend div { display: flex; align-items: center; gap: var(--cds-gap-xs); }
+  .cc-donut-legend .v { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--color-fg-muted); }
+  .cc-tablewrap { max-height: 22rem; overflow: auto; }
+  .cc-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-body); font-variant-numeric: tabular-nums; }
+  .cc-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .cc-table td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); }
+  .cc-table .num { text-align: right; }
+  .cc-empty { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); margin: var(--cds-gap-sm) 0 0; }
+  .cc-fail { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-height: 200px; }
+  .cc-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+  [data-dash-source-state=empty] { color: transparent; }
+  [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+  @media (max-width: 560px) { .cc-hide-narrow { display: none; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .cc-anim { animation: cc-rise var(--cds-dur-slow) var(--cds-ease-out) both; }
+    @keyframes cc-rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+<div class="cc">
+  <header class="cc-head" id="resumen">
+    <h1>Mi cuenta Cocos</h1>
+    <p class="cc-take dash-skeleton" id="takeaway">—</p>
+    <p class="cc-asof">Datos al <span class="dash-skeleton" data-source="summary" data-field="as_of" data-row="0">—</span> · se actualiza todos los días después del cierre del mercado</p>
+  </header>
+
+  <section class="cc-kpis" id="indicadores">
+    <div class="cc-card cc-kpi" id="kpi-valor">
+      <p class="cc-label">Valor total</p>
+      <p class="cc-big dash-skeleton" data-source="summary" data-field="total_usd" data-row="0">—</p>
+      <p class="cc-sub dash-skeleton" data-source="summary" data-field="total_ars" data-row="0">—</p>
+    </div>
+    <div class="cc-card cc-kpi" id="kpi-resultado">
+      <p class="cc-label">Ganancia / pérdida total</p>
+      <p class="cc-big dash-skeleton" data-source="summary" data-field="pnl_usd" data-row="0">—</p>
+      <p class="cc-sub"><span class="cc-pill dash-skeleton" data-source="summary" data-field="pnl_pct" data-row="0">—</span> sobre <span class="dash-skeleton" data-source="summary" data-field="contributed_usd" data-row="0">—</span> aportados</p>
+    </div>
+    <div class="cc-card cc-kpi" id="kpi-dia">
+      <p class="cc-label">Último día</p>
+      <p class="cc-big dash-skeleton" data-source="summary" data-field="day_change_usd" data-row="0">—</p>
+      <p class="cc-sub"><span class="cc-pill dash-skeleton" data-source="summary" data-field="day_change_pct" data-row="0">—</span> <span id="dia-sub"></span></p>
+    </div>
+    <div class="cc-card cc-kpi" id="kpi-invertido">
+      <p class="cc-label">Invertido</p>
+      <p class="cc-big dash-skeleton" data-source="summary" data-field="invested_usd" data-row="0">—</p>
+      <p class="cc-sub"><span class="dash-skeleton" data-source="summary" data-field="invested_share" data-row="0">—</span> de la cuenta · <span class="dash-skeleton" data-source="summary" data-field="positions" data-row="0">—</span> activos</p>
+    </div>
+    <div class="cc-card cc-kpi" id="kpi-efectivo">
+      <p class="cc-label">Efectivo disponible</p>
+      <p class="cc-big dash-skeleton" data-source="summary" data-field="cash_usd" data-row="0">—</p>
+      <p class="cc-sub"><span class="dash-skeleton" data-source="summary" data-field="cash_share" data-row="0">—</span> de la cuenta · <span class="dash-skeleton" data-source="summary" data-field="cash_ars" data-row="0">—</span></p>
+    </div>
+  </section>
+
+  <div class="cc-grid">
+    <section class="cc-card" id="resultado-acumulado">
+      <h2>Ganancia o pérdida acumulada</h2>
+      <p class="cc-note">Cuánto ganaste (verde) o perdiste (rojo) en dólares, descontando lo que ingresaste o retiraste.</p>
+      <div class="cc-chart" id="pnl-chart" data-source="history"></div>
+    </section>
+    <section class="cc-card" id="resultado-diario">
+      <h2>Resultado de cada día</h2>
+      <p class="cc-note">Ganancia o pérdida de cada actualización frente a la anterior, en dólares.</p>
+      <div class="cc-chart" id="daily-chart" data-source="history"></div>
+    </section>
+  </div>
+
+  <div class="cc-grid">
+    <section class="cc-card" id="rendimiento">
+      <h2>Rendimiento acumulado</h2>
+      <p class="cc-note">Ganancia o pérdida como porcentaje de lo que aportaste.</p>
+      <div class="cc-chart" id="ret-chart" data-source="history"></div>
+    </section>
+    <section class="cc-card" id="evolucion">
+      <h2>Valor de la cuenta y lo aportado</h2>
+      <p class="cc-note">La distancia entre las dos líneas es tu resultado.</p>
+      <div class="cc-legend" id="evo-legend"></div>
+      <div class="cc-chart" id="evo-chart" data-source="history"></div>
+    </section>
+  </div>
+
+  <div class="cc-grid">
+    <section class="cc-card" id="composicion">
+      <h2>En qué está tu plata</h2>
+      <p class="cc-note">Cada activo y el efectivo, como parte del total de la cuenta.</p>
+      <div class="cc-donut" id="comp-chart" data-source="composition"></div>
+    </section>
+    <section class="cc-card" id="por-activo">
+      <h2>Resultado por activo</h2>
+      <p class="cc-note">Ganancia o pérdida de cada inversión contra su precio de compra.</p>
+      <div class="cc-chart" id="asset-chart" data-source="positions"></div>
+    </section>
+  </div>
+
+  <div class="cc-grid">
+    <section class="cc-card" id="posiciones">
+      <h2>Posiciones</h2>
+      <p class="cc-note">Lo que tenés invertido hoy.</p>
+      <div class="cc-tablewrap">
+        <table class="cc-table" id="pos-table" data-source="positions" data-row-key="ticker">
+          <thead><tr>
+            <th data-field="ticker">Activo</th>
+            <th data-field="quantity" class="num">Cantidad</th>
+            <th data-field="price" class="num cc-hide-narrow">Precio</th>
+            <th data-field="value_usd" class="num">Valor (US$)</th>
+            <th data-field="pnl_usd" class="num">Resultado (US$)</th>
+            <th data-field="pnl_pct" class="num">%</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="cc-empty" id="pos-empty" hidden>Todavía no tenés inversiones: todo está en efectivo.</p>
+    </section>
+    <section class="cc-card" id="movimientos">
+      <h2>Movimientos</h2>
+      <p class="cc-note">Ingresos, retiros, compras, ventas y dividendos, del más reciente al más viejo.</p>
+      <div class="cc-tablewrap">
+        <table class="cc-table" id="mov-table" data-source="movements" data-row-key="id">
+          <thead><tr>
+            <th data-field="date">Fecha</th>
+            <th data-field="description">Detalle</th>
+            <th data-field="amount_usd" class="num">Monto (US$)</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="cc-empty" id="mov-empty" hidden>Sin movimientos todavía.</p>
+    </section>
+  </div>
+
+  <div class="cc-tip" id="cc-tip"></div>
+</div>
+
+<script>
+  dash.calc('summary', {
+    title: 'Resumen de la cuenta',
+    description: 'Último valor de la cuenta, lo aportado neto, la ganancia o pérdida y su peso, en dólares.',
+    inputs: ['snapshots', 'movements', 'positions'],
+    fn: (snapshots, movements, positions) => {
+      const s = snapshots.map((r) => ({
+        date: String(r.date).slice(0, 10), total_usd: Number(r.total_usd), total_ars: Number(r.total_ars),
+        cash_usd: Number(r.cash_usd), cash_ars: Number(r.cash_ars), invested_usd: Number(r.invested_usd),
+      })).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+      if (!s.length) return [];
+      const last = s[s.length - 1];
+      const prev = s.length > 1 ? s[s.length - 2] : null;
+      const flows = (from, to) => movements
+        .filter((m) => String(m.date).slice(0, 10) > from && String(m.date).slice(0, 10) <= to)
+        .reduce((a, m) => a + (Number(m.flow_usd) || 0), 0);
+      const contributed = flows('0000-00-00', last.date);
+      const pnl = last.total_usd - contributed;
+      const day = prev ? last.total_usd - prev.total_usd - flows(prev.date, last.date) : null;
+      const rate = last.total_usd ? last.total_ars / last.total_usd : 0;
+      const cashAllUsd = last.cash_usd + (rate ? last.cash_ars / rate : 0);
+      return [{
+        as_of: last.date, total_usd: last.total_usd, total_ars: last.total_ars,
+        cash_usd: last.cash_usd, cash_ars: last.cash_ars, invested_usd: last.invested_usd,
+        cash_share: last.total_usd ? cashAllUsd / last.total_usd : null,
+        invested_share: last.total_usd ? last.invested_usd / last.total_usd : null,
+        contributed_usd: contributed, pnl_usd: pnl,
+        pnl_pct: contributed ? pnl / contributed : null,
+        day_change_usd: day,
+        day_change_pct: prev && prev.total_usd ? day / prev.total_usd : null,
+        prev_date: prev ? prev.date : null,
+        positions: positions.length,
+      }];
+    },
+  });
+
+  dash.calc('history', {
+    title: 'Evolución diaria',
+    description: 'Por cada día guardado: valor, aportado, resultado acumulado y del día (US$ y %).',
+    inputs: ['snapshots', 'movements'],
+    fn: (snapshots, movements) => {
+      const s = snapshots.map((r) => ({ date: String(r.date).slice(0, 10), total_usd: Number(r.total_usd) }))
+        .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+      const upTo = (d) => movements.filter((m) => String(m.date).slice(0, 10) <= d).reduce((a, m) => a + (Number(m.flow_usd) || 0), 0);
+      return s.map((r, i) => {
+        const contributed = upTo(r.date);
+        const pnl = r.total_usd - contributed;
+        const prev = i > 0 ? s[i - 1] : null;
+        const daily = prev ? r.total_usd - prev.total_usd - (contributed - upTo(prev.date)) : 0;
+        return {
+          date: r.date, total_usd: r.total_usd, contributed_usd: contributed, pnl_usd: pnl,
+          return_pct: contributed ? pnl / contributed : 0,
+          daily_pnl_usd: daily, daily_pct: prev && prev.total_usd ? daily / prev.total_usd : 0,
+        };
+      });
+    },
+  });
+
+  dash.calc('composition', {
+    title: 'Composición de la cuenta',
+    description: 'Valor en dólares de cada activo y del efectivo, y su parte del total.',
+    inputs: ['positions', 'snapshots'],
+    fn: (positions, snapshots) => {
+      const last = [...snapshots].sort((a, b) => (String(a.date) < String(b.date) ? -1 : 1)).pop();
+      if (!last) return [];
+      const rate = Number(last.total_usd) ? Number(last.total_ars) / Number(last.total_usd) : 0;
+      const rows = positions.map((p) => ({ name: p.ticker, value_usd: Number(p.value_usd) }));
+      if (Number(last.cash_usd)) rows.push({ name: 'Efectivo en dólares', value_usd: Number(last.cash_usd) });
+      if (Number(last.cash_ars) && rate) rows.push({ name: 'Efectivo en pesos', value_usd: Number(last.cash_ars) / rate });
+      const total = rows.reduce((a, r) => a + r.value_usd, 0);
+      return rows.map((r) => ({ ...r, share: total ? r.value_usd / total : 0 })).sort((a, b) => b.value_usd - a.value_usd);
+    },
+  });
+
+  const nf2 = new Intl.NumberFormat('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const nf0 = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 });
+  const nfq = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 4 });
+  const bad = (v) => v == null || isNaN(v);
+  const usd = (v) => (bad(v) ? '—' : 'US$ ' + nf2.format(v));
+  const ars = (v) => (bad(v) ? '—' : '$ ' + nf2.format(v));
+  const sgn = (v) => (v > 0 ? '+' : v < 0 ? '−' : '');
+  const signed = (v, f) => (bad(v) ? '—' : sgn(v) + f(Math.abs(v)));
+  const pct = (v) => (bad(v) ? '—' : sgn(v) + nf2.format(Math.abs(v) * 100) + '%');
+  const share = (v) => (bad(v) ? '—' : nf2.format(v * 100).replace(/,00$/, '') + '%');
+  const fmtDate = (d) => { const [y, m, dd] = String(d).slice(0, 10).split('-'); return dd + '/' + m + '/' + y; };
+  const tone = (el, v) => { el.classList.remove('cc-good', 'cc-badv'); if (v > 0) el.classList.add('cc-good'); else if (v < 0) el.classList.add('cc-badv'); };
+  const q = (sel) => document.querySelector(sel);
+  const GOOD = 'var(--color-ok)', BADC = 'var(--color-bad)';
+  const tip = q('#cc-tip');
+
+  ['kpi-valor', 'kpi-resultado', 'kpi-dia', 'kpi-invertido', 'kpi-efectivo'].forEach((id, i) => { q('#' + id).style.borderTopColor = dash.colors[i % dash.colors.length]; });
+
+  function showTip(box, xPx, lines) {
+    tip.replaceChildren();
+    lines.forEach(([text, color, cls]) => {
+      const div = document.createElement('div');
+      if (cls) div.className = cls;
+      if (color) { const sw = document.createElement('span'); sw.className = 'cc-sw'; sw.style.background = color; div.append(sw); }
+      div.append(document.createTextNode(text));
+      tip.append(div);
+    });
+    tip.style.display = 'block';
+    const host = q('.cc').getBoundingClientRect(), b = box.getBoundingClientRect();
+    tip.style.left = Math.min(Math.max(0, b.left - host.left + xPx + 12), host.width - tip.offsetWidth) + 'px';
+    tip.style.top = (b.top - host.top + 8) + 'px';
+  }
+  const hideTip = () => { tip.style.display = 'none'; };
+
+  function prep(box, status) {
+    box.replaceChildren();
+    if (status === 'error' || status === 'connect' || status === 'declined') { box.classList.remove('dash-skeleton'); const f = document.createElement('div'); f.className = 'cc-fail'; f.textContent = 'Failed to load'; box.append(f); return false; }
+    if (status !== 'ok') { box.classList.add('dash-skeleton'); return false; }
+    box.classList.remove('dash-skeleton');
+    return true;
+  }
+  function note(svg, W, text) {
+    svg.append('text').attr('x', W / 2).attr('y', 14).attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(text);
+  }
+
+  // Time chart with a y axis; returns helpers
+  function frame(box, rows, yVals, fmtY, opts = {}) {
+    const W = Math.max(280, box.clientWidth), H = 220, top = 26, bottom = 24;
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).attr('class', 'cc-anim');
+    let lo = d3.min(yVals), hi = d3.max(yVals);
+    if (opts.zero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+    if (lo === hi) { const d = Math.abs(hi) * 0.05 || (opts.flat || 1); lo -= d; hi += d; }
+    const pad = (hi - lo) * 0.08;
+    const y = d3.scaleLinear([lo - (opts.zero && lo === 0 ? 0 : pad), hi + pad], [H - bottom, top]).nice(4);
+    const ticks = y.ticks(4);
+    const m = svg.append('text').attr('font-size', 11);
+    const left = d3.max(ticks, (t) => m.text(fmtY(t)).node().getComputedTextLength()) + 10; m.remove();
+    const single = rows.length === 1;
+    const x0 = rows[0].dt, x1 = rows[rows.length - 1].dt;
+    let x, band = null;
+    if (opts.bars) {
+      band = d3.scaleBand(rows.map((d) => d.date), [left + 6, W - 8]).padding(0.3);
+      x = (d) => band(d.date) + band.bandwidth() / 2;
+    } else {
+      const sx = d3.scaleUtc(single ? [d3.utcDay.offset(x0, -1), d3.utcDay.offset(x0, 1)] : [x0, x1], [left + 8, W - 12]);
+      x = (d) => sx(d.dt);
+    }
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', left).attr('x2', W - 6)
+      .attr('y1', (t) => y(t)).attr('y2', (t) => y(t)).attr('stroke', (t) => (t === 0 && opts.zero ? 'var(--cds-chart-axis)' : 'var(--cds-chart-grid)')).attr('stroke-width', 1);
+    svg.append('g').selectAll('text').data(ticks).join('text').attr('x', left - 6).attr('y', (t) => y(t)).attr('dy', '0.32em')
+      .attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(fmtY);
+    const n = Math.max(1, Math.floor((W - left) / 70));
+    const step = Math.ceil(rows.length / n);
+    svg.append('g').selectAll('text').data(rows.filter((d, i) => i % step === 0 || i === rows.length - 1)).join('text')
+      .attr('x', x).attr('y', H - 6).attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)')
+      .text((d) => d3.utcFormat('%d/%m')(d.dt));
+    return { svg, W, H, x, y, left, band, single, top, bottom };
+  }
+
+  function hoverLayer(f, box, rows, linesFor) {
+    const rule = f.svg.append('line').attr('y1', f.top).attr('y2', f.H - f.bottom).attr('stroke', 'var(--cds-chart-axis)').style('display', 'none');
+    f.svg.append('rect').attr('x', f.left).attr('y', 0).attr('width', f.W - f.left).attr('height', f.H).attr('fill', 'transparent')
+      .on('mousemove', (event) => {
+        const [mx] = d3.pointer(event);
+        const d = rows[d3.minIndex(rows, (r) => Math.abs(f.x(r) - mx))];
+        rule.style('display', null).attr('x1', f.x(d)).attr('x2', f.x(d));
+        showTip(box, (f.x(d) / f.W) * box.getBoundingClientRect().width, [[fmtDate(d.date), null, 'd'], ...linesFor(d)]);
+      })
+      .on('mouseleave', () => { rule.style('display', 'none'); hideTip(); });
+  }
+
+  // Line/area colored green above zero and red below
+  function signedLine(box, key, fmtY, fmtV, label) {
+    const h = dash.data('history');
+    if (!prep(box, h.status)) return;
+    const rows = h.data.map((d) => ({ ...d, dt: new Date(d.date + 'T12:00:00Z') }));
+    if (!rows.length) return;
+    const f = frame(box, rows, rows.map((d) => d[key]), fmtY, { zero: true, flat: key === 'return_pct' ? 0.01 : 1 });
+    const y0 = f.y(0);
+    const uid = 'cc' + key + Math.random().toString(36).slice(2, 7);
+    const defs = f.svg.append('defs');
+    defs.append('clipPath').attr('id', uid + 'u').append('rect').attr('x', 0).attr('y', 0).attr('width', f.W).attr('height', y0);
+    defs.append('clipPath').attr('id', uid + 'd').append('rect').attr('x', 0).attr('y', y0).attr('width', f.W).attr('height', f.H - y0);
+    [[GOOD, 'u', 'g'], [BADC, 'd', 'r']].forEach(([color, clip, gid]) => {
+      const g = defs.append('linearGradient').attr('id', uid + gid).attr('x1', 0).attr('x2', 0).attr('y1', clip === 'u' ? 0 : 1).attr('y2', clip === 'u' ? 1 : 0);
+      [[0, .3], [.5, .12], [1, .02]].forEach(([o, a]) => g.append('stop').attr('offset', o).attr('style', `stop-color:${color};stop-opacity:${a}`));
+      const grp = f.svg.append('g').attr('clip-path', `url(#${uid + clip})`);
+      if (!f.single) {
+        grp.append('path').datum(rows).attr('fill', `url(#${uid + gid})`).attr('d', d3.area().x(f.x).y0(y0).y1((d) => f.y(d[key])));
+        grp.append('path').datum(rows).attr('fill', 'none').attr('stroke', color).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round')
+          .attr('d', d3.line().x(f.x).y((d) => f.y(d[key])));
+      }
+    });
+    f.svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', f.x).attr('cy', (d) => f.y(d[key]))
+      .attr('r', f.single ? 5 : 3).attr('fill', (d) => (d[key] > 0 ? GOOD : d[key] < 0 ? BADC : 'var(--cds-chart-muted)'));
+    const lastRow = rows[rows.length - 1];
+    f.svg.append('text').attr('x', f.W - 8).attr('y', 14).attr('text-anchor', 'end').attr('font-size', 12).attr('font-weight', 600)
+      .attr('fill', lastRow[key] > 0 ? GOOD : lastRow[key] < 0 ? BADC : 'var(--color-fg-muted)').text('Hoy ' + fmtV(lastRow[key]));
+    hoverLayer(f, box, rows, (d) => [[label + ': ' + fmtV(d[key]), d[key] >= 0 ? GOOD : BADC]]);
+  }
+
+  function drawDaily() {
+    const box = q('#daily-chart');
+    const h = dash.data('history');
+    if (!prep(box, h.status)) return;
+    const rows = h.data.map((d) => ({ ...d, dt: new Date(d.date + 'T12:00:00Z') }));
+    if (!rows.length) return;
+    const f = frame(box, rows, rows.map((d) => d.daily_pnl_usd), (v) => 'US$ ' + nf0.format(v), { zero: true, bars: true });
+    const bw = Math.min(32, f.band.bandwidth());
+    f.svg.append('g').selectAll('rect').data(rows).join('rect')
+      .attr('x', (d) => f.x(d) - bw / 2).attr('width', bw)
+      .attr('y', (d) => Math.min(f.y(0), f.y(d.daily_pnl_usd))).attr('height', (d) => Math.max(1, Math.abs(f.y(d.daily_pnl_usd) - f.y(0))))
+      .attr('rx', 4).attr('fill', (d) => (d.daily_pnl_usd > 0 ? GOOD : d.daily_pnl_usd < 0 ? BADC : 'var(--cds-chart-muted)'));
+    const ups = rows.filter((d) => d.daily_pnl_usd > 0).length, downs = rows.filter((d) => d.daily_pnl_usd < 0).length;
+    f.svg.append('text').attr('x', f.W - 8).attr('y', 14).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)')
+      .text(rows.length > 1 ? `${ups} días en verde · ${downs} en rojo` : 'Se completa con las próximas actualizaciones');
+    hoverLayer(f, box, rows, (d) => [[signed(d.daily_pnl_usd, usd) + ' (' + pct(d.daily_pct) + ')', d.daily_pnl_usd >= 0 ? GOOD : BADC]]);
+  }
+
+  function drawEvo() {
+    const box = q('#evo-chart'), legend = q('#evo-legend');
+    legend.replaceChildren();
+    const h = dash.data('history');
+    if (!prep(box, h.status)) return;
+    const rows = h.data.map((d) => ({ ...d, dt: new Date(d.date + 'T12:00:00Z') }));
+    if (!rows.length) return;
+    const series = [{ key: 'total_usd', name: 'Valor total', color: dash.colors[0] }, { key: 'contributed_usd', name: 'Aportado', color: dash.colors[2] }];
+    series.forEach((s) => { const it = document.createElement('span'); const sw = document.createElement('span'); sw.className = 'cc-sw'; sw.style.background = s.color; it.append(sw, document.createTextNode(s.name)); legend.append(it); });
+    const f = frame(box, rows, rows.flatMap((d) => [d.total_usd, d.contributed_usd]), (v) => 'US$ ' + nf0.format(v));
+    series.slice().reverse().forEach((s) => {
+      if (!f.single) f.svg.append('path').datum(rows).attr('fill', 'none').attr('stroke', s.color).attr('stroke-width', 2)
+        .attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('stroke-dasharray', s.key === 'contributed_usd' ? '5 4' : null)
+        .attr('d', d3.line().x(f.x).y((d) => f.y(d[s.key])));
+      f.svg.append('g').selectAll('circle').data(rows).join('circle').attr('cx', f.x).attr('cy', (d) => f.y(d[s.key])).attr('r', f.single ? 5 : 2.5).attr('fill', s.color);
+    });
+    hoverLayer(f, box, rows, (d) => [...series.map((s) => [s.name + ': ' + usd(d[s.key]), s.color]), ['Resultado: ' + signed(d.pnl_usd, usd), d.pnl_usd >= 0 ? GOOD : BADC]]);
+  }
+
+  function drawComposition() {
+    const box = q('#comp-chart');
+    const c = dash.data('composition');
+    if (!prep(box, c.status)) return;
+    const rows = c.data.filter((r) => r.value_usd > 0);
+    if (!rows.length) return;
+    const size = 180, r = size / 2;
+    const svg = d3.select(box).append('svg').attr('width', size).attr('height', size).attr('viewBox', `${-r} ${-r} ${size} ${size}`).attr('class', 'cc-anim').style('flex', '0 0 auto');
+    const color = (i) => dash.colors[i % dash.colors.length];
+    const arcs = d3.pie().value((d) => d.value_usd).sort(null).padAngle(rows.length > 1 ? 0.02 : 0)(rows);
+    svg.selectAll('path').data(arcs).join('path').attr('d', d3.arc().innerRadius(r * 0.62).outerRadius(r).cornerRadius(4)).attr('fill', (d, i) => color(i))
+      .on('mousemove', (event, d) => { const [mx] = d3.pointer(event, box); showTip(box, mx, [[d.data.name, color(d.index)], [usd(d.data.value_usd) + ' · ' + share(d.data.share)]]); })
+      .on('mouseleave', hideTip);
+    const total = d3.sum(rows, (d) => d.value_usd);
+    svg.append('text').attr('text-anchor', 'middle').attr('y', -4).attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text('Total');
+    svg.append('text').attr('text-anchor', 'middle').attr('y', 14).attr('font-size', 14).attr('font-weight', 600).attr('fill', 'var(--color-fg)').text('US$ ' + nf0.format(total));
+    const leg = document.createElement('div'); leg.className = 'cc-donut-legend';
+    rows.forEach((d, i) => {
+      const row = document.createElement('div');
+      const sw = document.createElement('span'); sw.className = 'cc-sw'; sw.style.background = color(i);
+      const name = document.createElement('span'); name.textContent = d.name;
+      const v = document.createElement('span'); v.className = 'v'; v.textContent = share(d.share) + ' · ' + usd(d.value_usd);
+      row.append(sw, name, v); leg.append(row);
+    });
+    box.append(leg);
+  }
+
+  function drawAssets() {
+    const box = q('#asset-chart');
+    const p = dash.data('positions');
+    if (!prep(box, p.status)) return;
+    const rows = p.data.map((d) => ({ ticker: d.ticker, pnl_pct: Number(d.pnl_pct), pnl_usd: Number(d.pnl_usd) })).sort((a, b) => b.pnl_pct - a.pnl_pct);
+    if (!rows.length) { const e = document.createElement('p'); e.className = 'cc-empty'; e.textContent = 'Acá vas a ver qué inversión te da ganancia (verde) y cuál pérdida (rojo) cuando compres algo.'; box.append(e); return; }
+    const W = Math.max(280, box.clientWidth), rowH = 30, H = rows.length * rowH + 10;
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('height', H).attr('class', 'cc-anim');
+    const m = svg.append('text').attr('font-size', 12);
+    const labW = d3.max(rows, (d) => m.text(d.ticker).node().getComputedTextLength()) + 10;
+    const valW = d3.max(rows, (d) => m.text(pct(d.pnl_pct)).node().getComputedTextLength()) + 10; m.remove();
+    const ext = d3.max(rows, (d) => Math.abs(d.pnl_pct)) || 0.01;
+    const x = d3.scaleLinear([-ext, ext], [labW + valW, W - valW]);
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', 0).attr('y2', H).attr('stroke', 'var(--cds-chart-axis)');
+    const g = svg.selectAll('g.r').data(rows).join('g').attr('class', 'r').attr('transform', (d, i) => `translate(0, ${i * rowH + 5})`);
+    g.append('text').attr('x', 0).attr('y', rowH / 2 - 3).attr('dy', '0.32em').attr('font-size', 12).attr('fill', 'var(--color-fg)').text((d) => d.ticker);
+    g.append('rect').attr('x', (d) => Math.min(x(0), x(d.pnl_pct))).attr('y', 4).attr('height', rowH - 14).attr('rx', 4)
+      .attr('width', (d) => Math.max(2, Math.abs(x(d.pnl_pct) - x(0)))).attr('fill', (d) => (d.pnl_pct >= 0 ? GOOD : BADC));
+    g.append('text').attr('x', (d) => (d.pnl_pct >= 0 ? x(d.pnl_pct) + 6 : x(d.pnl_pct) - 6)).attr('y', rowH / 2 - 3).attr('dy', '0.32em')
+      .attr('text-anchor', (d) => (d.pnl_pct >= 0 ? 'start' : 'end')).attr('font-size', 12).attr('fill', (d) => (d.pnl_pct >= 0 ? GOOD : BADC)).text((d) => pct(d.pnl_pct));
+  }
+
+  function drawPositions() {
+    const p = dash.data('positions');
+    const body = q('#pos-table tbody');
+    body.replaceChildren();
+    const rows = p.status === 'ok' ? p.data : [];
+    q('#pos-empty').hidden = !(p.status === 'ok' && rows.length === 0);
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      const pnl = Number(r.pnl_usd);
+      [[r.ticker, ''], [nfq.format(Number(r.quantity)), 'num'], [(r.currency === 'ARS' ? '$ ' : 'US$ ') + nf2.format(Number(r.price)), 'num cc-hide-narrow'],
+        [nf2.format(Number(r.value_usd)), 'num'], [signed(pnl, (v) => nf2.format(v)), 'num'], [pct(Number(r.pnl_pct)), 'num']]
+        .forEach(([t, c], i) => { const td = document.createElement('td'); td.textContent = t; td.className = c; if (i >= 4) tone(td, pnl); tr.append(td); });
+      body.append(tr);
+    });
+  }
+
+  function drawMovements() {
+    const m = dash.data('movements');
+    const body = q('#mov-table tbody');
+    body.replaceChildren();
+    const rows = m.status === 'ok' ? [...m.data].sort((a, b) => (String(a.date) < String(b.date) ? 1 : String(a.date) > String(b.date) ? -1 : 0)) : [];
+    q('#mov-empty').hidden = !(m.status === 'ok' && rows.length === 0);
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      tr.dataset.key = r.id;
+      const amt = Number(r.amount_usd);
+      [[fmtDate(r.date), ''], [r.description, ''], [signed(amt, (v) => nf2.format(v)), 'num']].forEach(([t, c], i) => {
+        const td = document.createElement('td'); td.textContent = t; td.className = c; if (i === 2) tone(td, amt); tr.append(td);
+      });
+      body.append(tr);
+    });
+  }
+
+  dash.onData(() => {
+    hideTip();
+    const sm = dash.data('summary');
+    const r = sm.status === 'ok' && sm.data.length ? sm.data[0] : null;
+    const set = (field, text, toneVal) => {
+      const el = q(`.cc [data-source="summary"][data-field="${field}"]`);
+      el.textContent = text;
+      if (sm.status !== 'loading') el.classList.remove('dash-skeleton');
+      if (toneVal !== undefined) tone(el, toneVal);
+      return el;
+    };
+    set('as_of', r ? fmtDate(r.as_of) : '—');
+    set('total_usd', r ? usd(r.total_usd) : '—');
+    set('total_ars', r ? ars(r.total_ars) : '—');
+    set('pnl_usd', r ? signed(r.pnl_usd, usd) : '—', r ? r.pnl_usd : 0);
+    set('pnl_pct', r ? pct(r.pnl_pct) : '—', r ? r.pnl_usd : 0);
+    set('contributed_usd', r ? usd(r.contributed_usd) : '—');
+    set('day_change_usd', r && r.day_change_usd != null ? signed(r.day_change_usd, usd) : '—', r ? r.day_change_usd : 0);
+    set('day_change_pct', r && r.day_change_pct != null ? pct(r.day_change_pct) : '—', r ? r.day_change_usd : 0);
+    set('invested_usd', r ? usd(r.invested_usd) : '—');
+    set('invested_share', r ? share(r.invested_share) : '—');
+    set('positions', r ? String(r.positions) : '—');
+    set('cash_usd', r ? usd(r.cash_usd) : '—');
+    set('cash_share', r ? share(r.cash_share) : '—');
+    set('cash_ars', r ? ars(r.cash_ars) : '—');
+    q('#dia-sub').textContent = r && r.prev_date ? 'vs. ' + fmtDate(r.prev_date) : r ? 'desde la 2.ª actualización' : '';
+
+    const take = q('#takeaway');
+    take.classList.toggle('dash-skeleton', sm.status === 'loading');
+    tone(take, 0);
+    if (!r) take.textContent = sm.status === 'loading' ? '—' : 'No se pudieron cargar los datos de la cuenta.';
+    else if (r.positions === 0) take.textContent = 'Tenés ' + usd(r.total_usd) + ' en efectivo y todavía ninguna inversión: el resultado es ' + signed(r.pnl_usd, usd) + ' (' + pct(r.pnl_pct) + ').';
+    else { take.textContent = (r.pnl_usd >= 0 ? 'Vas ganando ' : 'Vas perdiendo ') + usd(Math.abs(r.pnl_usd)) + ' (' + pct(r.pnl_pct) + ') sobre lo que ingresaste; la cuenta vale ' + usd(r.total_usd) + '.'; tone(take, r.pnl_usd); }
+
+    signedLine(q('#pnl-chart'), 'pnl_usd', (v) => 'US$ ' + nf0.format(v), (v) => signed(v, usd), 'Resultado');
+    signedLine(q('#ret-chart'), 'return_pct', (v) => nf0.format(v * 100) + '%', pct, 'Rendimiento');
+    drawDaily();
+    drawEvo();
+    drawComposition();
+    drawAssets();
+    drawPositions();
+    drawMovements();
+  });
+</script>
+
+<p class="site-foot" id="site-updated"></p>
+</div>
+</body>
+</html>
