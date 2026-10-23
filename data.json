@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-22T22:05:00Z",
+  "updated_at": "2026-10-23T16:30:00Z",
   "snapshots": [
     {
       "date": "2026-10-22",
@@ -9,6 +9,15 @@
       "cash_usd": 1000.0,
       "cash_usd_cable": 0,
       "invested_usd": 0
+    },
+    {
+      "date": "2026-10-23",
+      "total_ars": 1540582.5,
+      "total_usd": 994.12,
+      "cash_ars": 0,
+      "cash_usd": 21.47,
+      "cash_usd_cable": 0,
+      "invested_usd": 972.65
     }
   ],
   "movements": [
@@ -31,7 +40,30 @@
       "amount": 300.0,
       "amount_usd": 300.0,
       "flow_usd": 300.0
+    },
+    {
+      "id": "2026-10-23-01",
+      "date": "2026-10-23",
+      "type": "Compra",
+      "description": "Compra 35 PBRD a US$ 27,79 (incluye US$ 5,88 de gastos)",
+      "currency": "USD",
+      "amount": -978.53,
+      "amount_usd": -978.53,
+      "flow_usd": 0
     }
   ],
-  "positions": []
+  "positions": [
+    {
+      "ticker": "PBRD",
+      "name": "Petroleo brasileiro",
+      "type": "CEDEAR",
+      "currency": "USD",
+      "quantity": "35",
+      "price": "27.79",
+      "value_usd": "972.65",
+      "cost_usd": "978.53",
+      "pnl_usd": "-5.88",
+      "pnl_pct": "-0.006009"
+    }
+  ]
 }
