@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-23T16:30:00Z",
+  "updated_at": "2026-10-26T17:47:00Z",
   "snapshots": [
     {
       "date": "2026-10-22",
@@ -12,12 +12,21 @@
     },
     {
       "date": "2026-10-23",
-      "total_ars": 1540582.5,
-      "total_usd": 994.12,
+      "total_ars": 1540567.0,
+      "total_usd": 994.11,
       "cash_ars": 0,
-      "cash_usd": 21.47,
+      "cash_usd": 21.46,
       "cash_usd_cable": 0,
       "invested_usd": 972.65
+    },
+    {
+      "date": "2026-10-26",
+      "total_ars": 1334282.19,
+      "total_usd": 850.11,
+      "cash_ars": 0,
+      "cash_usd": 21.46,
+      "cash_usd_cable": 0,
+      "invested_usd": 828.65
     }
   ],
   "movements": [
@@ -47,8 +56,8 @@
       "type": "Compra",
       "description": "Compra 35 PBRD a US$ 27,79 (incluye US$ 5,88 de gastos)",
       "currency": "USD",
-      "amount": -978.53,
-      "amount_usd": -978.53,
+      "amount": -978.54,
+      "amount_usd": -978.54,
       "flow_usd": 0
     }
   ],
@@ -59,11 +68,11 @@
       "type": "CEDEAR",
       "currency": "USD",
       "quantity": "35",
-      "price": "27.79",
-      "value_usd": "972.65",
-      "cost_usd": "978.53",
-      "pnl_usd": "-5.88",
-      "pnl_pct": "-0.006009"
+      "price": "23.6757",
+      "value_usd": "828.65",
+      "cost_usd": "978.54",
+      "pnl_usd": "-149.89",
+      "pnl_pct": "-0.153177"
     }
   ]
 }
