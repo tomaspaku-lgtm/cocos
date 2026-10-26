@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-26T17:47:00Z",
+  "updated_at": "2026-10-26T20:28:00Z",
   "snapshots": [
     {
       "date": "2026-10-22",
@@ -21,12 +21,12 @@
     },
     {
       "date": "2026-10-26",
-      "total_ars": 1334282.19,
-      "total_usd": 850.11,
+      "total_ars": 3691434.01,
+      "total_usd": 2351.92,
       "cash_ars": 0,
-      "cash_usd": 21.46,
+      "cash_usd": 226.66,
       "cash_usd_cable": 0,
-      "invested_usd": 828.65
+      "invested_usd": 2125.26
     }
   ],
   "movements": [
@@ -59,6 +59,46 @@
       "amount": -978.54,
       "amount_usd": -978.54,
       "flow_usd": 0
+    },
+    {
+      "id": "2026-10-26-01",
+      "date": "2026-10-26",
+      "type": "Ingreso",
+      "description": "Recibiste US$ 1.500",
+      "currency": "USD",
+      "amount": 1500.0,
+      "amount_usd": 1500.0,
+      "flow_usd": 1500.0
+    },
+    {
+      "id": "2026-10-26-02",
+      "date": "2026-10-26",
+      "type": "Compra",
+      "description": "Compra 151 YPFD",
+      "currency": "USD",
+      "amount": -803.62,
+      "amount_usd": -803.62,
+      "flow_usd": 0
+    },
+    {
+      "id": "2026-10-26-03",
+      "date": "2026-10-26",
+      "type": "Compra",
+      "description": "Compra 52 GGAL",
+      "currency": "USD",
+      "amount": -199.32,
+      "amount_usd": -199.32,
+      "flow_usd": 0
+    },
+    {
+      "id": "2026-10-26-04",
+      "date": "2026-10-26",
+      "type": "Compra",
+      "description": "Compra 30 NVDA",
+      "currency": "USD",
+      "amount": -291.86,
+      "amount_usd": -291.86,
+      "flow_usd": 0
     }
   ],
   "positions": [
@@ -68,11 +108,47 @@
       "type": "CEDEAR",
       "currency": "USD",
       "quantity": "35",
-      "price": "23.6757",
-      "value_usd": "828.65",
+      "price": "24.0949",
+      "value_usd": "843.32",
       "cost_usd": "978.54",
-      "pnl_usd": "-149.89",
-      "pnl_pct": "-0.153177"
+      "pnl_usd": "-135.22",
+      "pnl_pct": "-0.138185"
+    },
+    {
+      "ticker": "YPFD",
+      "name": "YPF",
+      "type": "Acción",
+      "currency": "USD",
+      "quantity": "151",
+      "price": "5.2652",
+      "value_usd": "795.04",
+      "cost_usd": "803.62",
+      "pnl_usd": "-8.58",
+      "pnl_pct": "-0.010677"
+    },
+    {
+      "ticker": "NVDA",
+      "name": "Nvidia",
+      "type": "CEDEAR",
+      "currency": "USD",
+      "quantity": "30",
+      "price": "9.6443",
+      "value_usd": "289.33",
+      "cost_usd": "291.86",
+      "pnl_usd": "-2.53",
+      "pnl_pct": "-0.008669"
+    },
+    {
+      "ticker": "GGAL",
+      "name": "Galicia",
+      "type": "Acción",
+      "currency": "USD",
+      "quantity": "52",
+      "price": "3.799",
+      "value_usd": "197.55",
+      "cost_usd": "199.32",
+      "pnl_usd": "-1.77",
+      "pnl_pct": "-0.00888"
     }
   ]
 }
