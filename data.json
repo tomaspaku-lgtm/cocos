@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-26T20:28:00Z",
+  "updated_at": "2026-10-27T13:42:00Z",
   "snapshots": [
     {
       "date": "2026-10-22",
@@ -21,12 +21,21 @@
     },
     {
       "date": "2026-10-26",
-      "total_ars": 3691434.01,
+      "total_ars": 3689660.13,
       "total_usd": 2351.92,
       "cash_ars": 0,
       "cash_usd": 226.66,
       "cash_usd_cable": 0,
       "invested_usd": 2125.26
+    },
+    {
+      "date": "2026-10-27",
+      "total_ars": 3726336.03,
+      "total_usd": 2375.16,
+      "cash_ars": 0,
+      "cash_usd": 1.75,
+      "cash_usd_cable": 0,
+      "invested_usd": 2373.41
     }
   ],
   "movements": [
@@ -99,6 +108,16 @@
       "amount": -291.86,
       "amount_usd": -291.86,
       "flow_usd": 0
+    },
+    {
+      "id": "2026-10-27-01",
+      "date": "2026-10-27",
+      "type": "Compra",
+      "description": "Compra 23 NVDA",
+      "currency": "USD",
+      "amount": -224.91,
+      "amount_usd": -224.91,
+      "flow_usd": 0
     }
   ],
   "positions": [
@@ -108,11 +127,11 @@
       "type": "CEDEAR",
       "currency": "USD",
       "quantity": "35",
-      "price": "24.0949",
-      "value_usd": "843.32",
+      "price": "24.4589",
+      "value_usd": "856.06",
       "cost_usd": "978.54",
-      "pnl_usd": "-135.22",
-      "pnl_pct": "-0.138185"
+      "pnl_usd": "-122.48",
+      "pnl_pct": "-0.125166"
     },
     {
       "ticker": "YPFD",
@@ -120,23 +139,23 @@
       "type": "Acción",
       "currency": "USD",
       "quantity": "151",
-      "price": "5.2652",
-      "value_usd": "795.04",
+      "price": "5.2958",
+      "value_usd": "799.66",
       "cost_usd": "803.62",
-      "pnl_usd": "-8.58",
-      "pnl_pct": "-0.010677"
+      "pnl_usd": "-3.96",
+      "pnl_pct": "-0.004928"
     },
     {
       "ticker": "NVDA",
       "name": "Nvidia",
       "type": "CEDEAR",
       "currency": "USD",
-      "quantity": "30",
-      "price": "9.6443",
-      "value_usd": "289.33",
-      "cost_usd": "291.86",
-      "pnl_usd": "-2.53",
-      "pnl_pct": "-0.008669"
+      "quantity": "53",
+      "price": "9.7375",
+      "value_usd": "516.09",
+      "cost_usd": "516.77",
+      "pnl_usd": "-0.68",
+      "pnl_pct": "-0.001316"
     },
     {
       "ticker": "GGAL",
@@ -144,11 +163,11 @@
       "type": "Acción",
       "currency": "USD",
       "quantity": "52",
-      "price": "3.799",
-      "value_usd": "197.55",
+      "price": "3.8683",
+      "value_usd": "201.15",
       "cost_usd": "199.32",
-      "pnl_usd": "-1.77",
-      "pnl_pct": "-0.00888"
+      "pnl_usd": "1.83",
+      "pnl_pct": "0.009181"
     }
   ]
 }
