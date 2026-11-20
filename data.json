@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-18T22:48:00Z",
+  "updated_at": "2026-11-20T22:20:00Z",
   "snapshots": [
     {
       "date": "2026-10-22",
@@ -63,6 +63,15 @@
       "cash_usd": 1.75,
       "cash_usd_cable": 0,
       "invested_usd": 1687.23
+    },
+    {
+      "date": "2026-11-20",
+      "total_ars": 2654038.37,
+      "total_usd": 1569.48,
+      "cash_ars": 6121.53,
+      "cash_usd": 1.75,
+      "cash_usd_cable": 0,
+      "invested_usd": 1564.11
     }
   ],
   "movements": [
@@ -145,20 +154,40 @@
       "amount": -224.91,
       "amount_usd": -224.91,
       "flow_usd": 0
+    },
+    {
+      "id": "2026-11-20-01",
+      "date": "2026-11-20",
+      "type": "Venta",
+      "description": "Venta 35 PBR (en pesos)",
+      "currency": "ARS",
+      "amount": 978086.56,
+      "amount_usd": 578.4,
+      "flow_usd": 0
+    },
+    {
+      "id": "2026-11-20-02",
+      "date": "2026-11-20",
+      "type": "Compra",
+      "description": "Compra 97 ANT (en pesos)",
+      "currency": "ARS",
+      "amount": -971965.03,
+      "amount_usd": -574.78,
+      "flow_usd": 0
     }
   ],
   "positions": [
     {
-      "ticker": "PBRD",
-      "name": "Petroleo brasileiro",
+      "ticker": "ANT",
+      "name": "Anthropic",
       "type": "CEDEAR",
       "currency": "USD",
-      "quantity": "35",
-      "price": "17.7171",
-      "value_usd": "620.1",
-      "cost_usd": "978.54",
-      "pnl_usd": "-358.44",
-      "pnl_pct": "-0.366301"
+      "quantity": "97",
+      "price": "6.2352",
+      "value_usd": "604.81",
+      "cost_usd": "574.78",
+      "pnl_usd": "30.03",
+      "pnl_pct": "0.052246"
     },
     {
       "ticker": "YPFD",
@@ -166,11 +195,11 @@
       "type": "Acción",
       "currency": "USD",
       "quantity": "151",
-      "price": "3.7234",
-      "value_usd": "562.24",
+      "price": "3.4485",
+      "value_usd": "520.73",
       "cost_usd": "803.62",
-      "pnl_usd": "-241.38",
-      "pnl_pct": "-0.300366"
+      "pnl_usd": "-282.89",
+      "pnl_pct": "-0.35202"
     },
     {
       "ticker": "NVDA",
@@ -178,11 +207,11 @@
       "type": "CEDEAR",
       "currency": "USD",
       "quantity": "53",
-      "price": "6.6392",
-      "value_usd": "351.88",
+      "price": "5.6323",
+      "value_usd": "298.51",
       "cost_usd": "516.77",
-      "pnl_usd": "-164.89",
-      "pnl_pct": "-0.319078"
+      "pnl_usd": "-218.26",
+      "pnl_pct": "-0.422354"
     },
     {
       "ticker": "GGAL",
@@ -190,11 +219,11 @@
       "type": "Acción",
       "currency": "USD",
       "quantity": "52",
-      "price": "2.9419",
-      "value_usd": "152.98",
+      "price": "2.6935",
+      "value_usd": "140.06",
       "cost_usd": "199.32",
-      "pnl_usd": "-46.34",
-      "pnl_pct": "-0.23249"
+      "pnl_usd": "-59.26",
+      "pnl_pct": "-0.297311"
     }
   ]
 }
