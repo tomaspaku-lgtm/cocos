@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-24T20:42:05Z",
+  "updated_at": "2026-11-25T20:42:08Z",
   "snapshots": [
     {
       "date": "2026-10-22",
@@ -81,6 +81,15 @@
       "cash_usd": 1.75,
       "cash_usd_cable": 0,
       "invested_usd": 1577.28
+    },
+    {
+      "date": "2026-11-25",
+      "total_ars": 2651166.26,
+      "total_usd": 1588.11,
+      "cash_ars": 6121.53,
+      "cash_usd": 1.75,
+      "cash_usd_cable": 0,
+      "invested_usd": 1582.69
     }
   ],
   "movements": [
@@ -192,11 +201,11 @@
       "type": "CEDEAR",
       "currency": "USD",
       "quantity": "97",
-      "price": "5.7600",
-      "value_usd": "558.72",
+      "price": "5.9000",
+      "value_usd": "572.30",
       "cost_usd": "574.78",
-      "pnl_usd": "-16.06",
-      "pnl_pct": "-0.027941"
+      "pnl_usd": "-2.48",
+      "pnl_pct": "-0.004315"
     },
     {
       "ticker": "YPFD",
@@ -204,11 +213,11 @@
       "type": "Acción",
       "currency": "USD",
       "quantity": "151",
-      "price": "3.4150",
-      "value_usd": "515.67",
+      "price": "3.3950",
+      "value_usd": "512.65",
       "cost_usd": "803.62",
-      "pnl_usd": "-287.95",
-      "pnl_pct": "-0.358316"
+      "pnl_usd": "-290.97",
+      "pnl_pct": "-0.362074"
     },
     {
       "ticker": "NVDA",
@@ -216,11 +225,11 @@
       "type": "CEDEAR",
       "currency": "USD",
       "quantity": "53",
-      "price": "6.8100",
-      "value_usd": "360.93",
+      "price": "6.6000",
+      "value_usd": "349.80",
       "cost_usd": "516.77",
-      "pnl_usd": "-155.84",
-      "pnl_pct": "-0.301565"
+      "pnl_usd": "-166.97",
+      "pnl_pct": "-0.323103"
     },
     {
       "ticker": "GGAL",
@@ -228,11 +237,11 @@
       "type": "Acción",
       "currency": "USD",
       "quantity": "52",
-      "price": "2.7300",
-      "value_usd": "141.96",
+      "price": "2.8450",
+      "value_usd": "147.94",
       "cost_usd": "199.32",
-      "pnl_usd": "-57.36",
-      "pnl_pct": "-0.287778"
+      "pnl_usd": "-51.38",
+      "pnl_pct": "-0.257776"
     }
   ]
 }
